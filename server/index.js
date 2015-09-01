@@ -1,45 +1,26 @@
-// var net = require('net'),
-//     util = require('util'),
-//     clients = {};
+var net = require('net'),
+    clients = {};
 
-// var server = net.createServer();
+var server = net.createServer();
 
-// server.on('connection', function(sock) {
-//     var fd = sock._handle.fd;
+server.on('connection', function(socket) {
+    var socketFd = socket._handle.fd;
 
-//     clients[fd] = sock;
+    clients[socketFd] = socket;
 
-//     sock.on('close', function() {
-//         delete clients[fd];
-//     });
-// }).listen(3000);
+    socket.on('data', function(data) {
+        var fd, student;
+        for (fd in clients) {
+            student = clients[fd];
+            if (student.writable && socketFd.toString() !== fd.toString()) {
+                student.write(data);
+            }
+        }
+    });
 
-// setInterval(function() {
-//     var i, sock;
-//     for (i in clients) {
-//         sock = clients[i];
-//         if (sock.writable) {
-//             sock.write("SOCKET: " + i)
-//         }
-//     }
-// }, 4000);
-
-//========================================0000=================================
-
-var express = require('express');
-var app = express();
-
-var server = app.listen(3000, function () {
-  var host = server.address().address;
-  var port = server.address().port;
-
-  console.log('Example app listening at http://%s:%s', host, port);
+    socket.on('close', function() {
+        delete clients[socketFd];
+    });
 });
 
-app.get('/consultas', function(req, res) {
-    // Enviar consultas
-});
-
-app.post('/consultas', function(req, res) {
-    // Escribir consulta
-});
+server.listen(3000);
