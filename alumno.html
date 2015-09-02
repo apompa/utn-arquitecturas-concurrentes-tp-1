@@ -62,7 +62,8 @@
   <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
   <script>
     (function(){
-      var socket = io("192.168.3.88:3000");
+      var socket = io("192.168.3.88:3000",{query:"type=student&id="+Date.now()});
+      
       setInterval(function(){
         socket.emit('student question', "question");
       }, 5000);
@@ -70,7 +71,11 @@
        var onMessage = function(msg){
         $('#messages').append($('<li>').text(msg));
       };  
-
+      
+      $('#m').on("keypress",function(){
+        socket.emit('typing');
+      });
+      
       socket.on('student question', onMessage);
       socket.on('teacher answer', onMessage);
       

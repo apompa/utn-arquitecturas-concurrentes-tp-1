@@ -62,7 +62,7 @@
   <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
   <script>
     (function(){
-      var socket = io("192.168.3.88:3000");
+      var socket = io("192.168.3.88:3000",{query:"type=teacher"});
       var counter = 1;
       
        var onMessage = function(msg){
