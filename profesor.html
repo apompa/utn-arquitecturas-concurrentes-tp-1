@@ -62,7 +62,7 @@
   <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
   <script>
     (function(){
-      var socket = io("192.168.3.88:3000",{query:"type=teacher"});
+      var socket = io("192.168.3.88:3000");
       var counter = 1;
       
        var onMessage = function(msg){
@@ -71,15 +71,16 @@
 
         socket.on('student question', function(msg) {
           $('#m').on("keypress",function(){
-            socket.emit('typing');
+            socket.emit('typing client');
           });
           onMessage(msg);
           if (counter%5===0){
-            socket.emit('teacher answer', "answer ");
+            socket.emit('teacher answer', "answer");
            }
            counter++;
          });
         socket.on('teacher answer', onMessage);
+        socket.on('typing server', onMessage);
       })();
   </script>
 </body>
