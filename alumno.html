@@ -72,10 +72,6 @@
         $('#messages').append($('<li>').text(msg));
       };  
       
-      $('#m').on("keypress",function(){
-        socket.emit('typing');
-      });
-      
       socket.on('student question', onMessage);
       socket.on('teacher answer', onMessage);
       

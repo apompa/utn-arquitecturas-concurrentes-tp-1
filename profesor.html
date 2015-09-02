@@ -70,6 +70,9 @@
         };  
 
         socket.on('student question', function(msg) {
+          $('#m').on("keypress",function(){
+            socket.emit('typing');
+          });
           onMessage(msg);
           if (counter%5===0){
             socket.emit('teacher answer', "answer ");
