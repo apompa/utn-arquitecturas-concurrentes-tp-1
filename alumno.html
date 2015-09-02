@@ -63,10 +63,8 @@
   <script>
     (function(){
       var socket = io("192.168.3.88:3000");
-      var counter = 0;
       setInterval(function(){
-        socket.emit('student question', "question "+counter);
-        counter++;
+        socket.emit('student question', "question");
       },5000);
       
        var onMessage = function(msg){

@@ -64,14 +64,11 @@
     (function(){
       var socket = io("192.168.3.88:3000");
       var counter = 0;
-      var question = 0;
       
        var onMessage = function(msg){
          $('#messages').append($('<li>').text(msg));
-         counter++
          if (counter%5===0){
-            socket.emit('teacher answer', "answer "+question);
-            question++;
+            socket.emit('teacher answer', "answer ");
          }
       };  
       socket.on('student question', onMessage);
