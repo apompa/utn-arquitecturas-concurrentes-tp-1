@@ -65,7 +65,7 @@
       var socket = io("192.168.3.88:3000");
       setInterval(function(){
         socket.emit('student question', "question");
-      },5000);
+      }, 5000);
       
        var onMessage = function(msg){
         $('#messages').append($('<li>').text(msg));

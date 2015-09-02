@@ -63,16 +63,20 @@
   <script>
     (function(){
       var socket = io("192.168.3.88:3000");
-      var counter = 0;
+      var counter = 1;
       
        var onMessage = function(msg){
-         $('#messages').append($('<li>').text(msg));
-         if (counter%5===0){
+           $('#messages').append($('<li>').text(msg));
+        };  
+
+        socket.on('student question', function(msg) {
+          onMessage(msg);
+          if (counter%5===0){
             socket.emit('teacher answer', "answer ");
-         }
-      };  
-      socket.on('student question', onMessage);
-      socket.on('teacher answer', onMessage);
+           }
+           counter++;
+         });
+        socket.on('teacher answer', onMessage);
       })();
   </script>
 </body>

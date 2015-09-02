@@ -14,15 +14,22 @@ app.get('/alumno', sendFile('alumno'));
 app.get('/profesor', sendFile('profesor'));
 
 
+var studentsAndTeachers = [];
+
 io.on('connection', function(socket){
-    socket.on('student question', function(socket){
-        console.log('STUDENT');
-        io.emit('student question', msg);
+    var amountOfQuestions = 0;
+    var amountOfAnswers = 0;
+
+    studentsAndTeachers.push(socket);
+
+    socket.on('student question', function(question){
+        amountOfQuestions++;
+        io.emit('student question', question + " " + amountOfQuestions);
     });
 
-    socket.on('teacher answer', function(socket){
-        console.log('TEACHER');
-        io.emit('teacher answer', msg);
+    socket.on('teacher answer', function(answer){
+        amountOfAnswers++;
+        io.emit('teacher answer', answer + " " + amountOfAnswers);
     });
 });
 
