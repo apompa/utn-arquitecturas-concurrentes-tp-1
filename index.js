@@ -1,6 +1,11 @@
 var app = require('express')();
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
+
+/*
+*
+* HTML
+*
+*/
 
 var sendFile = function(fileName) {
     return function(req, res) {
@@ -10,34 +15,74 @@ var sendFile = function(fileName) {
 
 app.get('/', sendFile('alumno'));
 app.get('/alumno', sendFile('alumno'));
-
 app.get('/profesor', sendFile('profesor'));
 
+app.get('/socket.io.js', function(req, res) {
+  res.sendFile(__dirname + '/socket.io.js');
+});
 
-var studentsAndTeachers = [];
-
-io.on('connection', function(socket){
-    var amountOfQuestions = 0;
-    var amountOfAnswers = 0;
-
-    studentsAndTeachers.push(socket);
-
-    socket.on('student question', function(question){
-        amountOfQuestions++;
-        io.emit('student question', question + " " + amountOfQuestions);
-    });
-
-    socket.on('teacher answer', function(answer){
-        amountOfAnswers++;
-        io.emit('teacher answer', answer + " " + amountOfAnswers);
-    });
+http.listen(4000, function(){
+  console.log('listening on *:4000');
 });
 
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+/*
+*
+* Server
+*
+*/
+
+var createModelForChannel = function(channel) {
+    return {
+        amount: 0,
+        channel: channel,
+        bindOnSocket: function(socket) {
+            socket.on(this.channel, this.add.bind(this));
+        },
+        add: function(text) {
+            this.amount += 1;
+
+            console.log(this.channel, this.amount);
+
+            io2000.emit(channel, text + ' ' + this.amount);
+            io3000.emit(channel, text + ' ' + this.amount);
+        }
+    };
+};
+
+var question = createModelForChannel('student question');
+var answer   = createModelForChannel('teacher answer');
+
+var students = [];
+var teachers = [];
+
+var io2000 = require('socket.io')(http);
+var io3000 = require('socket.io')(http);
+
+
+console.log('Estudiante listening on 2000');
+
+io2000.listen(2000).on('connection', function(socket) {
+    students.push(socket);
+
+    console.log('Nuevo ESTUDIANTE');
+
+    question.bindOnSocket(socket);
+    answer.bindOnSocket(socket);
 });
 
+console.log('Profesor listening on 3000');
 
-//socket.on
-//socket.broadcast.emit
+io3000.listen(3000).sockets.on('connection', function(socket){
+    teachers.push(socket);
+
+    console.log('Nuevo PROFESOR');
+
+    question.bindOnSocket(socket);
+    answer.bindOnSocket(socket);
+
+    socket.on('typing client', function(question){
+        console.log('Socket started typing');
+        socket.broadcast.emit('typing server', 'I\'m typing!!');
+    });
+});
