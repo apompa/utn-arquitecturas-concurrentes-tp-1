@@ -5,7 +5,7 @@
       <link rel="stylesheet" href="main.css">
   </head>
   <body>
-    <h1 class="title">Alumno</h1>
+    <h1 id="title" class="title">Alumno</h1>
     <ul id="messages"></ul>
     <form action="">
       <input id="m" autocomplete="off" />
@@ -16,22 +16,37 @@
     <script>
       (function(){
         var socket = io("127.0.0.1:2000");
-        var $messages = $('#messages');
         var questions = ['¿Pasamos el parcial?', '¿Zafo del final?', '¿Hay un solo TP?', '¿Se promociona?', '¿Hay recreo?'];
+        var askQuestion = function() { return questions[Math.floor(Math.random() * 5)]; };
+
+        var myself = {};
         
-        setInterval(function(){
-          socket.emit('student question', questions[Math.floor(Math.random() * 5)]);
-        }, 5000);
-        
-         var onMessage = function(msg){
+        var $messages = $('#messages');
+
+        var onMessage = function(msg){
           $messages.append($('<li>').text(msg));
           $("html, body").scrollTop($messages.get(0).scrollHeight);
         };  
+
+        var startWritingQuestions = function() {
+          setInterval(function(){
+            socket.emit('student question', {
+              student: myself,
+              text: askQuestion(),
+              timestamp: Date.now()
+            });
+          }, 5000);
+        };
         
+        socket.on('whoami', function(person) {
+          myself = person;
+          document.getElementById("title").innerHTML = myself.name;
+          startWritingQuestions();
+        });
+
         socket.on('student question', onMessage);
         socket.on('teacher answer', onMessage);
-        
-        })();
+      })();
     </script>
   </body>
 </html>
