@@ -5,9 +5,9 @@
       <link rel="stylesheet" href="main.css">
   </head>
   <body>
-    <h1 id="title" class="title">Alumno</h1>
+    <h1 id="title" class="title">[Alumno] ...</h1>
     <ul id="messages"></ul>
-    
+
     <script src="socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
@@ -38,7 +38,7 @@
         
         socket.on('whoami', function(person) {
           myself = person;
-          document.getElementById("title").innerHTML = myself.name;
+          document.getElementById("title").innerHTML = "[Alumno] " + myself.name;
           startWritingQuestions();
         });
 
