@@ -85,8 +85,8 @@ io3000.listen(3000).sockets.on('connection', function(socket){
     question.bindOnSocket(socket);
     answer.bindOnSocket(socket);
 
-    socket.on('typing client', function(question){
+    socket.on('typing client', function(typingText){
         console.log('Socket started typing');
-        socket.broadcast.emit('typing server', 'I\'m typing!!');
+        socket.broadcast.emit('typing server', typingText);
     });
 });

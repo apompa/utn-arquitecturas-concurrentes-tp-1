@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="main.css">
   </head>
   <body>
+    <h1 class="title">Profesor</h1>
     <ul id="messages"></ul>
     <form action="">
       <input id="m" autocomplete="off" />
@@ -15,22 +16,26 @@
     <script>
       (function(){
         var socket = io("127.0.0.1:3000");
+        var $messages = $("#messages");
         var counter = 1;
         
-         var onMessage = function(msg){
-             $('#messages').append($('<li>').text(msg));
+         var onMessage = function(msg) {
+            $messages.append($('<li>').text(msg));
+            $("html, body").scrollTop($messages.get(0).scrollHeight);
           };  
 
-          $('#m').on("keypress",function(){
-            socket.emit('typing client');
+          socket.on('student question', function(question) {
+            onMessage(question);
+            if (counter % 5 === 0) {
+              socket.emit('typing client', 'Estoy escribiendo una respuesta a "' + question + '"');
+
+              setTimeout(function() {
+                socket.emit('teacher answer', '"' + question + '" -> NO');
+              }, 1000);
+            }
+            counter++;
           });
-          socket.on('student question', function(msg) {
-            onMessage(msg);
-            if (counter%5===0){
-              socket.emit('teacher answer', "answer");
-             }
-             counter++;
-           });
+
           socket.on('teacher answer', onMessage);
           socket.on('typing server', onMessage);
         })();
