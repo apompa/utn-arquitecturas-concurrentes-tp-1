@@ -36,6 +36,18 @@ http.listen(4000, function(){
 *
 */
 
+//
+// IO
+//
+
+var io2000 = require('socket.io')(http);
+var io3000 = require('socket.io')(http);
+
+var ioEmit = function() {
+    io2000.emit.apply(io2000, arguments);
+    io3000.emit.apply(io3000, arguments);
+};
+
 var students = [];
 var teachers = [];
 var getNewPerson = (function() {
@@ -50,56 +62,55 @@ var getNewPerson = (function() {
     };
 })();
 
-var io2000 = require('socket.io')(http);
-var io3000 = require('socket.io')(http);
 
-var questions = 0;
-var answers   = 0;
+
+//
+// Student/Teachers
+//
+
+var questions = [];
+
+var studentQuestionOn = function(socket) {
+    socket.on('student question', function(question) {
+        ioEmit('student question', question);
+    });
+};
+
+var teacherAnswerOn = function(socket) {
+    socket.on('teacher answer', function(answer) {
+        ioEmit('teacher answer', answer);
+    });
+};
+
+
+//
+// Sockets
+//
 
 console.log('Estudiante listening on 2000');
 
 io2000.listen(2000).on('connection', function(socket) {
-    students.push(socket);
-
     console.log('Nuevo ESTUDIANTE');
+
+    students.push(socket);
 
     socket.emit("whoami", getNewPerson());
 
-    socket.on('student question', function(question) {
-        questions += 1;
-
-        io2000.emit('student question', question.text + ' ' + questions);
-        io3000.emit('student question', question.text + ' ' + questions);
-    });
-    socket.on('teacher answer', function(answer) {
-        answers += 1;
-
-        io2000.emit('teacher answer', answer.text + ' ' + answers);
-        io3000.emit('teacher answer', answer.text + ' ' + answers);
-    });
+    studentQuestionOn(socket);
+    teacherAnswerOn(socket);
 });
 
 console.log('Profesor listening on 3000');
 
 io3000.listen(3000).sockets.on('connection', function(socket){
-    teachers.push(socket);
-
     console.log('Nuevo PROFESOR');
+
+    teachers.push(socket);
 
     socket.emit("whoami", getNewPerson());
 
-    socket.on('student question', function(question) {
-        questions += 1;
-
-        io2000.emit('student question', question.text + ' ' + questions);
-        io3000.emit('student question', question.text + ' ' + questions);
-    });
-    socket.on('teacher answer', function(answer) {
-        answers += 1;
-
-        io2000.emit('teacher answer', answer.text + ' ' + answers);
-        io3000.emit('teacher answer', answer.text + ' ' + answers);
-    });
+    studentQuestionOn(socket);
+    teacherAnswerOn(socket);
 
     socket.on('typing client', function(typingText){
         console.log('Socket started typing');

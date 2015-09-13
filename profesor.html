@@ -21,8 +21,8 @@
 
         var $messages = $("#messages");
         
-         var onMessage = function(msg) {
-            $messages.append($('<li>').text(msg));
+         var onMessage = function(message) {
+            $messages.append($('<li>').text(message.text));
             $("html, body").scrollTop($messages.get(0).scrollHeight);
           };  
           
@@ -32,11 +32,12 @@
           });
 
           socket.on('student question', function(question) {
+            var now = Date.now();
             var answer = {
               teacher: myself,
               question: question,
-              text: '"' + question + '" -> NO',
-              timestamp: Date.now()
+              text: '"' + question + '" -> NO ' + now,
+              timestamp: now
             };
 
             onMessage(question);
