@@ -36,10 +36,6 @@ http.listen(4000, function(){
 *
 */
 
-//
-// IO
-//
-
 var io2000 = require('socket.io')(http);
 var io3000 = require('socket.io')(http);
 
@@ -48,11 +44,13 @@ var ioEmit = function() {
     io3000.emit.apply(io3000, arguments);
 };
 
-var students = [];
-var teachers = [];
+//
+// Students/Teachers
+//
+
 var getNewPerson = (function() {
     var counter = -1;
-    var names = ["Pedro", "Carlos", "Marta", "Rosana", "Florencia", "Esteban"];
+    var names = ["Pedro", "Carlos", "Marta", "Rosana", "Florencia", "Esteban", "Lenoardo", "Carolina"];
     return function() {
         counter += 1;
         return {
@@ -65,37 +63,45 @@ var getNewPerson = (function() {
 
 
 //
-// Student/Teachers
+// Questions/Answers
 //
+var questionMixin = function(_question) {
+    _question.isEqualTo = function(question) {
+        return _question.timestamp === question.timestamp && _question.student.id === question.student.id;
+    };
+    return _question;
+};
 
-var questions = [];
+var questions = {
+    list: [],
+    add: function(question) {
+        this.list.push(questionMixin(question));
+    },
+    notAnswered: function(question, success) {
+        this.list.some(function(_question) {
+            if(_question.isEqualTo(question)) {
+                if (!_question.answered) {
+                    _question.answered = true;
+                    success(question);
+                }
+                return true;
+            }
+        });
+    }
+};
 
 var studentQuestionOn = function(socket) {
     socket.on('student question', function(question) {
-        questions.push(question);
+        questions.add(question);
         ioEmit('student question', question);
     });
 };
 
 var teacherAnswerOn = function(socket) {
     socket.on('teacher answer', function(answer) {
-        var wasAnswered = false;
-        questions.some(function(question) {
-            if(answer.question.timestamp === question.timestamp && answer.question.student.id === question.student.id) {
-
-                if (question.answered) {
-                    wasAnswered = true;
-                } else {
-                    question.answered = true;
-                }
-                return true;
-
-            }
-        });
-
-        if (!wasAnswered) {
+        questions.notAnswered(answer.question, function() {
             ioEmit('teacher answer', answer);
-        }
+        });
     });
 };
 
@@ -109,8 +115,6 @@ console.log('Estudiante listening on 2000');
 io2000.listen(2000).on('connection', function(socket) {
     console.log('Nuevo ESTUDIANTE');
 
-    students.push(socket);
-
     socket.emit("whoami", getNewPerson());
 
     studentQuestionOn(socket);
@@ -122,14 +126,12 @@ console.log('Profesor listening on 3000');
 io3000.listen(3000).sockets.on('connection', function(socket){
     console.log('Nuevo PROFESOR');
 
-    teachers.push(socket);
-
     socket.emit("whoami", getNewPerson());
 
     studentQuestionOn(socket);
     teacherAnswerOn(socket);
 
-    socket.on('typing client', function(typingText){
-        socket.broadcast.emit('typing server', typingText);
+    socket.on('typing client', function(typingObj){
+        socket.broadcast.emit('typing server', typingObj);
     });
 });
