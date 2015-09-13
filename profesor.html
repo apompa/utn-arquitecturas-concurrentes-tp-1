@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <title>PROFESOR</title>
     <link rel="stylesheet" href="main.css">
   </head>
   <body>
@@ -36,13 +36,16 @@
             var answer = {
               teacher: myself,
               question: question,
-              text: '"' + question + '" -> NO ' + now,
+              text: '[' + now + '] "' + question.text + '" - Respuesta: NO.',
               timestamp: now
             };
 
             onMessage(question);
             if (counter % 5 === 0) {
-              socket.emit('typing client', 'Estoy escribiendo una respuesta a "' + question + '"');
+              socket.emit('typing client', {
+                question: question,
+                text: 'Estoy escribiendo una respuesta a "' + question.text + '"'
+              });
 
               setTimeout(function() {
                 socket.emit('teacher answer', answer);

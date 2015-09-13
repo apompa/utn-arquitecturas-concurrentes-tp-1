@@ -72,13 +72,30 @@ var questions = [];
 
 var studentQuestionOn = function(socket) {
     socket.on('student question', function(question) {
+        questions.push(question);
         ioEmit('student question', question);
     });
 };
 
 var teacherAnswerOn = function(socket) {
     socket.on('teacher answer', function(answer) {
-        ioEmit('teacher answer', answer);
+        var wasAnswered = false;
+        questions.some(function(question) {
+            if(answer.question.timestamp === question.timestamp && answer.question.student.id === question.student.id) {
+
+                if (question.answered) {
+                    wasAnswered = true;
+                } else {
+                    question.answered = true;
+                }
+                return true;
+
+            }
+        });
+
+        if (!wasAnswered) {
+            ioEmit('teacher answer', answer);
+        }
     });
 };
 
@@ -113,7 +130,6 @@ io3000.listen(3000).sockets.on('connection', function(socket){
     teacherAnswerOn(socket);
 
     socket.on('typing client', function(typingText){
-        console.log('Socket started typing');
         socket.broadcast.emit('typing server', typingText);
     });
 });

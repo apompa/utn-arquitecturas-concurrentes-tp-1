@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <title>ALUMNO</title>
       <link rel="stylesheet" href="main.css">
   </head>
   <body>
@@ -32,7 +32,8 @@
             var now = Date.now();
             socket.emit('student question', {
               student: myself,
-              text: questions[Math.floor(Math.random() * 5)] + " " + now,
+              text: "[" + now + "] " + questions[Math.floor(Math.random() * 5)],
+              answered: false,
               timestamp: now
             });
           }, 5000);
