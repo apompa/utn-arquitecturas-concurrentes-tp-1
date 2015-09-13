@@ -7,19 +7,23 @@ var http = require('http').Server(app);
 *
 */
 
-var sendFile = function(fileName) {
+var sendHTMLFile = function(fileName) {
     return function(req, res) {
-      res.sendFile(__dirname + '/' + fileName + '.html');
+        res.sendFile(__dirname + '/' + fileName + '.html');
     };
 };
+var getFile = function(fileName) {
+    app.get(fileName, function(req, res) {
+        res.sendFile(__dirname + '/' + fileName);
+    });
+};
 
-app.get('/', sendFile('alumno'));
-app.get('/alumno', sendFile('alumno'));
-app.get('/profesor', sendFile('profesor'));
+app.get('/', sendHTMLFile('alumno'));
+app.get('/alumno', sendHTMLFile('alumno'));
+app.get('/profesor', sendHTMLFile('profesor'));
 
-app.get('/socket.io.js', function(req, res) {
-  res.sendFile(__dirname + '/socket.io.js');
-});
+getFile('/socket.io.js');
+getFile('/main.css');
 
 http.listen(4000, function(){
   console.log('listening on *:4000');

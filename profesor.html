@@ -1,88 +1,39 @@
 <!doctype html>
 <html>
+  <head>
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" href="main.css">
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" />
+      <button>Send</button>
+    </form>
+    <script src="socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      (function(){
+        var socket = io("127.0.0.1:3000");
+        var counter = 1;
+        
+         var onMessage = function(msg){
+             $('#messages').append($('<li>').text(msg));
+          };  
 
-<head>
-  <title>Socket.IO chat</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font: 13px Helvetica, Arial;
-    }
-    
-    form {
-      background: #000;
-      padding: 3px;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-    }
-    
-    form input {
-      border: 0;
-      padding: 10px;
-      width: 90%;
-      margin-right: .5%;
-    }
-    
-    form button {
-      width: 9%;
-      background: rgb(130, 224, 255);
-      border: none;
-      padding: 10px;
-    }
-    
-    #messages {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-    }
-    
-    #messages li {
-      padding: 5px 10px;
-    }
-    
-    #messages li:nth-child(odd) {
-      background: #eee;
-    }
-  </style>
-</head>
-
-<body>
-  <ul id="messages"></ul>
-  <form action="">
-    <input id="m" autocomplete="off" />
-    <button>Send</button>
-  </form>
-  <script src="socket.io.js"></script>
-  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-  <script>
-    (function(){
-      var socket = io("192.168.3.88:3000");
-      var counter = 1;
-      
-       var onMessage = function(msg){
-           $('#messages').append($('<li>').text(msg));
-        };  
-
-        $('#m').on("keypress",function(){
-          socket.emit('typing client');
-        });
-        socket.on('student question', function(msg) {
-          onMessage(msg);
-          if (counter%5===0){
-            socket.emit('teacher answer', "answer");
-           }
-           counter++;
-         });
-        socket.on('teacher answer', onMessage);
-        socket.on('typing server', onMessage);
-      })();
-  </script>
-</body>
-
+          $('#m').on("keypress",function(){
+            socket.emit('typing client');
+          });
+          socket.on('student question', function(msg) {
+            onMessage(msg);
+            if (counter%5===0){
+              socket.emit('teacher answer', "answer");
+             }
+             counter++;
+           });
+          socket.on('teacher answer', onMessage);
+          socket.on('typing server', onMessage);
+        })();
+    </script>
+  </body>
 </html>
