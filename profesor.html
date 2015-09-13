@@ -7,10 +7,7 @@
   <body>
     <h1 id="title" class="title">Profesor</h1>
     <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" />
-      <button>Send</button>
-    </form>
+
     <script src="socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
@@ -36,7 +33,7 @@
             var answer = {
               teacher: myself,
               question: question,
-              text: '[' + now + '] "' + question.text + '" - Respuesta: NO.',
+              text: '[' + now + '] "' + question.text + '" - Respuesta de ' + myself.name + ': NO.',
               timestamp: now
             };
 
@@ -44,7 +41,7 @@
             if (counter % 5 === 0) {
               socket.emit('typing client', {
                 question: question,
-                text: 'Estoy escribiendo una respuesta a "' + question.text + '"'
+                text: 'Soy ' + myself.name + ' y estoy escribiendo una respuesta a "' + question.text + '"'
               });
 
               setTimeout(function() {
