@@ -1,4 +1,5 @@
 var app = require('express')();
+var Promise = require('bluebird');
 var http = require('http').Server(app);
 
 /*
@@ -78,15 +79,18 @@ var questions = {
         this.list.push(questionMixin(question));
     },
     notAnswered: function(question, success) {
-        this.list.some(function(_question) {
-            if(_question.isEqualTo(question)) {
-                if (!_question.answered) {
-                    _question.answered = true;
-                    success(question);
+        return new Promise(function (resolve, reject) {
+            this.list.some(function(_question) {
+                if(_question.isEqualTo(question)) {
+                    if (!_question.answered) {
+                        _question.answered = true;
+                        resolve(question);
+                    }
+                    return true;
                 }
-                return true;
-            }
-        });
+            });
+            reject();
+        })
     }
 };
 
@@ -99,9 +103,13 @@ var studentQuestionOn = function(socket) {
 
 var teacherAnswerOn = function(socket) {
     socket.on('teacher answer', function(answer) {
-        questions.notAnswered(answer.question, function() {
-            ioEmit('teacher answer', answer);
-        });
+        questions.notAnswered(answer.question)
+            .then(function() {
+                ioEmit('teacher answer', answer);
+            })
+            .catch(function() {
+               console.log(question.text, "Ya fue respondida");
+            });
     });
 };
 
@@ -123,7 +131,7 @@ io2000.listen(2000).on('connection', function(socket) {
 
 console.log('Profesor listening on 3000');
 
-io3000.listen(3000).sockets.on('connection', function(socket){
+io3000.listen(3000).on('connection', function(socket){
     console.log('Nuevo PROFESOR');
 
     socket.emit("whoami", getNewPerson());
