@@ -1,20 +1,23 @@
 <!doctype html>
 <html>
-  <head>
-    <title>PROFESOR</title>
-    <link rel="stylesheet" href="main.css">
-  </head>
-  <body>
-    <h1 id="title" class="title">[Profesor] ...</h1>
-    <ul id="messages"></ul>
 
-    <script src="socket.io.js"></script>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-    <script>
-      (function(){
+<head>
+  <title>PROFESOR</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+  <h1 id="title" class="title">[Profesor] ...</h1>
+  <ul id="messages"></ul>
+
+  <script src="socket.io.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+    (function(){
         var socket = io("127.0.0.1:3000");
         var myself = {};
         var counter = 1;
+        var questionsBeingAnswered =  [];
 
         var $messages = $("#messages");
         
@@ -26,34 +29,48 @@
           socket.on('whoami', function(person) {
             myself = person;
             document.getElementById("title").innerHTML = "[Profesor] " + myself.name;
+            document.title = "[Profesor] " + myself.name;
           });
 
           socket.on('student question', function(question) {
-            var now = Date.now();
-            var answer = {
-              teacher: myself,
-              question: question,
-              text: '[' + now + '] "' + question.text + '" - Respuesta de ' + myself.name + ': NO.',
-              timestamp: now
-            };
-
-            onMessage(question);
-            if (counter % 5 === 0) {
-              socket.emit('typing client', {
-                question: question,
-                text: 'Soy ' + myself.name + ' y estoy escribiendo una respuesta a "' + question.text + '"'
-              });
-
-              setTimeout(function() {
-                socket.emit('teacher answer', answer);
-              }, 1000);
-            }
-            counter++;
+            // setTimeout(function(){
+              onMessage(question);
+              if (counter % 5 === 0) {
+                if($.inArray(question.timestamp, questionsBeingAnswered)!=-1){
+                    onMessage({text:"Ya se está respondiendo la pregunta "+question.text});
+                    return;
+                }
+                var now = Date.now();
+                var answer = {
+                  teacher: myself,
+                  question: question,
+                  text: '[' + now + '] "' + question.text + '" - Respuesta de ' + myself.name + ': NO.',
+                  timestamp: now
+                };
+                socket.emit('typing client', {
+                  question: question,
+                  answer: answer,
+                  text: 'Soy ' + myself.name + ' y estoy escribiendo una respuesta a "' + question.text + '"'
+                });
+  
+                setTimeout(function() {
+                  socket.emit('teacher answer', answer);
+                }, 500);
+              }
+              counter++;
+            // },500);
           });
 
-          socket.on('teacher answer', onMessage);
-          socket.on('typing server', onMessage);
+          socket.on('teacher answer', function(answer){
+            //questionsBeingAnswered.pop(answer.question.timestamp)
+            onMessage(answer);            
+          });
+          socket.on('typing server', function(typingObj){
+            questionsBeingAnswered.push(typingObj.question.timestamp);
+            onMessage(typingObj);            
+          });  
         })();
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>

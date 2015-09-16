@@ -1,17 +1,19 @@
 <!doctype html>
 <html>
-  <head>
-    <title>ALUMNO</title>
-      <link rel="stylesheet" href="main.css">
-  </head>
-  <body>
-    <h1 id="title" class="title">[Alumno] ...</h1>
-    <ul id="messages"></ul>
 
-    <script src="socket.io.js"></script>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-    <script>
-      (function(){
+<head>
+  <title>ALUMNO</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+  <h1 id="title" class="title">[Alumno] ...</h1>
+  <ul id="messages"></ul>
+
+  <script src="socket.io.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+    (function(){
         var socket = io("127.0.0.1:2000");
         var questions = ['¿Pasamos el parcial?', '¿Zafo del final?', '¿Hay un solo TP?', '¿Se promociona?', '¿Hay recreo?'];
 
@@ -39,12 +41,14 @@
         socket.on('whoami', function(person) {
           myself = person;
           document.getElementById("title").innerHTML = "[Alumno] " + myself.name;
+          document.title = "[Alumno] " + myself.name;
           startWritingQuestions();
         });
 
         socket.on('student question', onMessage);
         socket.on('teacher answer', onMessage);
       })();
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>
