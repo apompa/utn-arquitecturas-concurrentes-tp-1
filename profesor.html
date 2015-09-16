@@ -16,7 +16,7 @@
         var myself = {};
         var counter = 1;
         var questionsBeingAnswered =  [];
-        var escribiendo = false;
+        var writing = false;
 
         var $messages = $("#messages");
 
@@ -34,9 +34,9 @@
           socket.on('student question', function(question) {
             // setTimeout(function(){
               writeMessageToBoard(question);
-              if(!escribiendo){
-                  escribiendo = true;
-                  if (counter % 5 === 0) {
+              if(!writing){
+                  writing = true;
+                  if (counter % 1 === 0) {
                     if($.inArray(question.timestamp, questionsBeingAnswered)!=-1){
                         onMessage({text:"Ya se está respondiendo la pregunta "+question.text});
                         return;
@@ -62,6 +62,7 @@
       
                     setTimeout(function() {
                       socket.emit('teacher answer', answer);
+                        writing = false;
                     }, 500);
                   }
                   counter++;
