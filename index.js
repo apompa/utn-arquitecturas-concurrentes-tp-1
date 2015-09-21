@@ -38,31 +38,7 @@ http.listen(4000, function () {
 */
 
 
-var io2000 = require('socket.io')(http);
-var io3000 = require('socket.io')(http);
-
-var io = {
-    list: [io2000, io3000],
-    emitAll: function (channel, value) {
-        this.list.forEach(function (_io) {
-            _io.emit(channel, value);
-        }, this);
-    }
-}
-
-// var promisifyer = function(list,method){
-//         list.forEach(function (_io) {
-//             _io[method+"Async"] = function (event, payload) {
-//                 return new Promise(function (resolve, reject) {
-//                     return _io[method](event, payload, function () {
-//                         var args = _.toArray(arguments)
-//                         if (args[0]) return reject(new Error(args[0]))
-//                         return resolve.apply(null, args)
-//                     })
-//                 })
-//             }
-//         }, this);
-// }
+var io = require('socket.io')(http);
 
 //
 // Students/Teachers
@@ -115,8 +91,9 @@ var questions = {
 
 var studentQuestionOn = function (socket) {
     socket.on('student question', function (question) {
+        console.log(question);
         questions.add(question);
-        io.emitAll('student question', question);
+        ioGlobal.emit('student question', question);
     });
 };
 
@@ -124,7 +101,7 @@ var teacherAnswerOn = function (socket) {
     socket.on('teacher answer', function (answer) {
         questions.notAnswered(answer.question)
             .then(function () {
-                io.emitAll('teacher answer', answer);
+                ioGlobal.emit('teacher answer', answer);
             })
             .catch(function (question) {
                 console.log(question.text, "Ya fue respondida");
@@ -132,25 +109,12 @@ var teacherAnswerOn = function (socket) {
     });
 };
 
-
 //
 // Sockets
 //
 
-console.log('Estudiante listening on 2000');
 
-io2000.listen(2000).on('connection', function (socket) {
-    console.log('Nuevo ESTUDIANTE');
-
-    socket.emit("whoami", getNewPerson());
-
-    studentQuestionOn(socket);
-    teacherAnswerOn(socket);
-});
-
-console.log('Profesor listening on 3000');
-
-io3000.listen(3000).on('connection', function (socket) {
+var teachers = io.of('/teachers').on('connection', function (socket) {
     console.log('Nuevo PROFESOR');
 
     socket.emit("whoami", getNewPerson());
@@ -160,5 +124,38 @@ io3000.listen(3000).on('connection', function (socket) {
 
     socket.on('typing client', function (typingObj) {
         socket.broadcast.emit('typing server', typingObj);
+        socket.emit("finished typing", typingObj.answer);
     });
 });
+
+var students = io.of('/students').on('connection', function (socket) {
+    console.log('Nuevo ESTUDIANTE');
+
+    socket.emit("whoami", getNewPerson());
+
+    studentQuestionOn(socket);
+    teacherAnswerOn(socket);
+});
+
+var ioGlobal = {
+    list: [students, teachers],
+    emit: function (channel, value) {
+        this.list.forEach(function (_io) {
+            _io.emit(channel, value);
+        }, this);
+    }
+}
+
+// var promisifyer = function(list,method){
+//         list.forEach(function (_io) {
+//             _io[method+"Async"] = function (event, payload) {
+//                 return new Promise(function (resolve, reject) {
+//                     return _io[method](event, payload, function () {
+//                         var args = _.toArray(arguments)
+//                         if (args[0]) return reject(new Error(args[0]))
+//                         return resolve.apply(null, args)
+//                     })
+//                 })
+//             }
+//         }, this);
+// }
