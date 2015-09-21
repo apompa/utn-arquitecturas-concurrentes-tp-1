@@ -19,9 +19,9 @@ var getFile = function (fileName) {
     });
 };
 
-app.get('/', sendHTMLFile('alumno'));
-app.get('/alumno', sendHTMLFile('alumno'));
-app.get('/profesor', sendHTMLFile('profesor'));
+app.get('/', sendHTMLFile('student'));
+app.get('/student', sendHTMLFile('student'));
+app.get('/teacher', sendHTMLFile('teacher'));
 
 getFile('/socket.io.js');
 getFile('/main.css');

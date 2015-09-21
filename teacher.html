@@ -14,9 +14,9 @@
   <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
   <script>
     (function(){
-        var socket = io("127.0.0.1:3000");
+        var socket = io("/teachers");
         var myself = {};
-        var counter = 1;
+        var questionsCounter = 1;
         var questionsBeingAnswered =  [];
 
         var $messages = $("#messages");
@@ -33,9 +33,10 @@
           });
 
           socket.on('student question', function(question) {
-            // setTimeout(function(){
               onMessage(question);
-              if (counter % 5 === 0) {
+              questionsCounter++;
+              console.log(1);
+              if (questionsCounter % Math.round(Math.random()*5) === 0) {
                 if($.inArray(question.timestamp, questionsBeingAnswered)!=-1){
                     onMessage({text:"Ya se está respondiendo la pregunta "+question.text});
                     return;
@@ -52,23 +53,23 @@
                   answer: answer,
                   text: 'Soy ' + myself.name + ' y estoy escribiendo una respuesta a "' + question.text + '"'
                 });
-  
-                setTimeout(function() {
-                  socket.emit('teacher answer', answer);
-                }, 500);
               }
-              counter++;
-            // },500);
           });
 
           socket.on('teacher answer', function(answer){
-            //questionsBeingAnswered.pop(answer.question.timestamp)
+            questionsBeingAnswered.pop(answer.question.timestamp)
+            console.log(4);
             onMessage(answer);            
           });
           socket.on('typing server', function(typingObj){
             questionsBeingAnswered.push(typingObj.question.timestamp);
-            onMessage(typingObj);            
+            onMessage(typingObj);
+            console.log(2);
           });  
+          socket.on('finished typing', function(answer){
+            console.log(3);
+              socket.emit('teacher answer', answer);
+          });
         })();
   </script>
 </body>
